@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useApp } from '@/components/providers';
-import type { Driver, Ride, RideStatus } from '@/types';
+import type { Driver, Ride, RideStatus, UserProfile } from '@/types';
 import { toast } from 'sonner';
 
 export function useDriver() {
@@ -11,6 +11,7 @@ export function useDriver() {
   const [driver, setDriver] = useState<Driver | null>(null);
   const [pendingRides, setPendingRides] = useState<Ride[]>([]);
   const [activeRide, setActiveRide] = useState<Ride | null>(null);
+  const [activeCustomer, setActiveCustomer] = useState<UserProfile | null>(null);
   const [todayStats, setTodayStats] = useState({ rides: 0, earnings: 0, rating: 5 });
   const [loading, setLoading] = useState(false);
 
@@ -45,7 +46,20 @@ export function useDriver() {
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
-    setActiveRide(data as Ride | null);
+    const ride = data as Ride | null;
+    setActiveRide(ride);
+
+    // جلب بيانات العميل
+    if (ride?.customer_id) {
+      const { data: cu } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', ride.customer_id)
+        .maybeSingle();
+      setActiveCustomer(cu as UserProfile | null);
+    } else {
+      setActiveCustomer(null);
+    }
   }, [user]);
 
   const fetchTodayStats = useCallback(async () => {
@@ -114,8 +128,20 @@ export function useDriver() {
         .from('drivers')
         .update({ status: 'busy' })
         .eq('id', driver.id);
-      setActiveRide(data as Ride);
+      const ride = data as Ride;
+      setActiveRide(ride);
       setPendingRides((prev) => prev.filter((r) => r.id !== rideId));
+
+      // جلب بيانات العميل
+      if (ride.customer_id) {
+        const { data: cu } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', ride.customer_id)
+          .maybeSingle();
+        setActiveCustomer(cu as UserProfile | null);
+      }
+
       toast.success('تم قبول الرحلة');
     } catch (e: any) {
       toast.error(e.message || 'فشل قبول الرحلة');
@@ -141,6 +167,7 @@ export function useDriver() {
           .update({ status: 'online', total_rides: (driver.total_rides ?? 0) + 1 })
           .eq('id', driver.id);
         setActiveRide(null);
+        setActiveCustomer(null);
       } else {
         setActiveRide((prev) => (prev ? { ...prev, status } : null));
       }
@@ -171,6 +198,7 @@ export function useDriver() {
     driver,
     pendingRides,
     activeRide,
+    activeCustomer,
     todayStats,
     loading,
     setStatus,
