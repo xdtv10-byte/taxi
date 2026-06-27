@@ -33,8 +33,10 @@ export function useAuth() {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
-      // بعد تسجيل الدخول مباشرة — تأكد أن الصف موجود وإلا أنشئه
       if (data.user) {
+        const meta = data.user.user_metadata;
+
+        // تأكد أن صف users موجود
         const { data: existing } = await supabase
           .from('users')
           .select('id')
@@ -42,8 +44,6 @@ export function useAuth() {
           .maybeSingle();
 
         if (!existing) {
-          // الصف غير موجود — أنشئه الآن (المستخدم مسجّل دخول فـ RLS يسمح)
-          const meta = data.user.user_metadata;
           await supabase.from('users').insert({
             id: data.user.id,
             name: meta?.name || data.user.email?.split('@')[0] || 'مستخدم',
@@ -51,6 +51,40 @@ export function useAuth() {
             phone: meta?.phone || '',
             user_type: meta?.user_type || 'customer',
           });
+        }
+
+        // إذا كان سائقاً — تأكد أن بيانات السائق موجودة
+        if (meta?.user_type === 'driver') {
+          const { data: driverExists } = await supabase
+            .from('drivers')
+            .select('id')
+            .eq('user_id', data.user.id)
+            .maybeSingle();
+
+          if (!driverExists && meta?.driver_data) {
+            try {
+              const driverData = typeof meta.driver_data === 'string'
+                ? JSON.parse(meta.driver_data)
+                : meta.driver_data;
+
+              await supabase.from('drivers').insert({
+                user_id: data.user.id,
+                license_number: driverData.license_number,
+                vehicle_make: driverData.vehicle_make,
+                vehicle_model: driverData.vehicle_model,
+                vehicle_year: driverData.vehicle_year,
+                vehicle_color: driverData.vehicle_color,
+                vehicle_plate: driverData.vehicle_plate,
+                vehicle_type: driverData.vehicle_type,
+                status: 'offline',
+                is_available: false,
+                rating: 5.0,
+                total_rides: 0,
+              });
+            } catch (parseErr) {
+              console.error('Failed to create driver from metadata:', parseErr);
+            }
+          }
         }
       }
 
@@ -75,14 +109,36 @@ export function useAuth() {
             name: input.name,
             phone: input.phone,
             user_type: input.user_type,
+            // نحفظ بيانات السائق في metadata لاستخدامها عند أول تسجيل دخول
+            driver_data: input.driver ? JSON.stringify(input.driver) : null,
           },
         },
       });
       if (error) throw error;
       if (!data.user) throw new Error('فشل إنشاء الحساب');
 
-      // إذا لا يوجد تأكيد إيميل (session موجود فوراً) — أنشئ الصف مباشرة
+      const createDriverRecord = async (userId: string) => {
+        if (input.user_type === 'driver' && input.driver) {
+          const { error: driverError } = await supabase.from('drivers').upsert({
+            user_id: userId,
+            license_number: input.driver.license_number,
+            vehicle_make: input.driver.vehicle_make,
+            vehicle_model: input.driver.vehicle_model,
+            vehicle_year: input.driver.vehicle_year,
+            vehicle_color: input.driver.vehicle_color,
+            vehicle_plate: input.driver.vehicle_plate,
+            vehicle_type: input.driver.vehicle_type,
+            status: 'offline',
+            is_available: false,
+            rating: 5.0,
+            total_rides: 0,
+          }, { onConflict: 'user_id' });
+          if (driverError) console.error('Driver insert error:', driverError);
+        }
+      };
+
       if (data.session) {
+        // تسجيل فوري بدون تأكيد إيميل
         await supabase.from('users').upsert({
           id: data.user.id,
           name: input.name,
@@ -91,16 +147,19 @@ export function useAuth() {
           user_type: input.user_type,
         }, { onConflict: 'id' });
 
-        if (input.user_type === 'driver' && input.driver) {
-          await supabase.from('drivers').upsert({
-            user_id: data.user.id,
-            ...input.driver,
-          }, { onConflict: 'user_id' });
-        }
-
+        await createDriverRecord(data.user.id);
         toast.success('تم إنشاء الحساب بنجاح');
       } else {
-        // تأكيد إيميل مطلوب — الـ trigger سينشئ الصف بعد التفعيل
+        // تأكيد إيميل مطلوب — نحاول الإدراج الآن وإن فشل فالـ trigger + signIn سيكملان
+        await supabase.from('users').upsert({
+          id: data.user.id,
+          name: input.name,
+          email: input.email,
+          phone: input.phone,
+          user_type: input.user_type,
+        }, { onConflict: 'id' });
+
+        await createDriverRecord(data.user.id);
         toast.success('تم الإرسال! تحقق من بريدك الإلكتروني لتفعيل الحساب.');
       }
 
