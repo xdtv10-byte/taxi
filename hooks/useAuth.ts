@@ -101,6 +101,7 @@ export function useAuth() {
   const signUp = async (input: SignUpInput) => {
     setLoading(true);
     try {
+      // نحفظ بيانات السائق في metadata — ستُستخدم عند أول تسجيل دخول
       const { data, error } = await supabase.auth.signUp({
         email: input.email,
         password: input.password,
@@ -109,7 +110,6 @@ export function useAuth() {
             name: input.name,
             phone: input.phone,
             user_type: input.user_type,
-            // نحفظ بيانات السائق في metadata لاستخدامها عند أول تسجيل دخول
             driver_data: input.driver ? JSON.stringify(input.driver) : null,
           },
         },
@@ -117,10 +117,19 @@ export function useAuth() {
       if (error) throw error;
       if (!data.user) throw new Error('فشل إنشاء الحساب');
 
-      const createDriverRecord = async (userId: string) => {
+      if (data.session) {
+        // لا يوجد تأكيد إيميل — أنشئ الصفوف مباشرة
+        await supabase.from('users').upsert({
+          id: data.user.id,
+          name: input.name,
+          email: input.email,
+          phone: input.phone,
+          user_type: input.user_type,
+        }, { onConflict: 'id' });
+
         if (input.user_type === 'driver' && input.driver) {
-          const { error: driverError } = await supabase.from('drivers').upsert({
-            user_id: userId,
+          await supabase.from('drivers').upsert({
+            user_id: data.user.id,
             license_number: input.driver.license_number,
             vehicle_make: input.driver.vehicle_make,
             vehicle_model: input.driver.vehicle_model,
@@ -133,37 +142,16 @@ export function useAuth() {
             rating: 5.0,
             total_rides: 0,
           }, { onConflict: 'user_id' });
-          if (driverError) console.error('Driver insert error:', driverError);
         }
-      };
 
-      if (data.session) {
-        // تسجيل فوري بدون تأكيد إيميل
-        await supabase.from('users').upsert({
-          id: data.user.id,
-          name: input.name,
-          email: input.email,
-          phone: input.phone,
-          user_type: input.user_type,
-        }, { onConflict: 'id' });
-
-        await createDriverRecord(data.user.id);
         toast.success('تم إنشاء الحساب بنجاح');
+        return { error: null, needsEmailConfirmation: false };
       } else {
-        // تأكيد إيميل مطلوب — نحاول الإدراج الآن وإن فشل فالـ trigger + signIn سيكملان
-        await supabase.from('users').upsert({
-          id: data.user.id,
-          name: input.name,
-          email: input.email,
-          phone: input.phone,
-          user_type: input.user_type,
-        }, { onConflict: 'id' });
-
-        await createDriverRecord(data.user.id);
-        toast.success('تم الإرسال! تحقق من بريدك الإلكتروني لتفعيل الحساب.');
+        // تأكيد إيميل مطلوب — لا نحاول إدراج شيء الآن
+        // الـ trigger + signIn سيتولى الأمر بعد التفعيل
+        toast.success('تم التسجيل! تحقق من بريدك الإلكتروني لتفعيل الحساب ثم سجّل الدخول.');
+        return { error: null, needsEmailConfirmation: true };
       }
-
-      return { error: null, needsEmailConfirmation: !data.session };
     } catch (e: any) {
       toast.error(e.message || 'فشل إنشاء الحساب');
       return { error: e, needsEmailConfirmation: false };
