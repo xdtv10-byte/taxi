@@ -59,7 +59,7 @@ export default function RegisterPage() {
         return;
       }
     }
-    const { error } = await signUp({
+    const { error, needsEmailConfirmation } = await signUp({
       name: form.name,
       email: form.email,
       phone: form.phone,
@@ -79,7 +79,10 @@ export default function RegisterPage() {
           : undefined,
     });
     if (!error) {
-      router.push('/login');
+      if (needsEmailConfirmation) {
+        router.push('/login');
+      }
+      // إذا لم يكن تأكيد إيميل مطلوباً، useEffect سيوجّه تلقائياً
     }
   };
 
