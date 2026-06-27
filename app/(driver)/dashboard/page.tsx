@@ -63,13 +63,45 @@ export default function DriverDashboardPage() {
     );
   }
 
-  if (!driver) {
+  // لم يتم إنشاء حساب سائق بعد
+  if (!driver && !loading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background">
-        <p className="text-muted-foreground">
-          {lang === 'ar' ? 'لم يتم العثور على بيانات السائق' : 'Driver profile not found'}
-        </p>
-        <Button onClick={() => fetchDriver()} variant="outline">{t('loading')}</Button>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background px-4">
+        <div className="flex h-20 w-20 items-center justify-center rounded-2xl gradient-primary">
+          <Car className="h-10 w-10 text-white" />
+        </div>
+        <div className="text-center">
+          <h2 className="text-xl font-bold">
+            {lang === 'ar' ? 'لم يتم العثور على ملف السائق' : 'Driver Profile Not Found'}
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {lang === 'ar'
+              ? 'حسابك مسجّل كـ سائق لكن لا يوجد ملف سائق. تواصل مع الإدارة أو سجّل من بوابة السائق.'
+              : 'Your account is set as driver but no driver profile exists. Please register via the driver portal.'}
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <Button asChild variant="outline">
+            <Link href="/driver-portal">
+              {lang === 'ar' ? 'بوابة السائق' : 'Driver Portal'}
+            </Link>
+          </Button>
+          <Button onClick={() => fetchDriver()} className="gradient-primary text-white">
+            {lang === 'ar' ? 'إعادة المحاولة' : 'Retry'}
+          </Button>
+        </div>
+        <Button variant="ghost" onClick={async () => { await signOut(); router.push('/'); }} className="text-muted-foreground">
+          <LogOut className="me-2 h-4 w-4" />
+          {lang === 'ar' ? 'تسجيل خروج' : 'Sign Out'}
+        </Button>
+      </div>
+    );
+  }
+
+  if (loading || !driver) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -209,7 +241,6 @@ export default function DriverDashboardPage() {
               </div>
             </div>
 
-            {/* Status progression buttons */}
             <div className="flex flex-wrap gap-2">
               {activeRide.status === 'accepted' && (
                 <Button
@@ -292,17 +323,15 @@ export default function DriverDashboardPage() {
                         <div className="text-lg font-bold text-gradient">
                           {ride.estimated_fare} {t('sar')}
                         </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => acceptRide(ride.id)}
-                            disabled={loading}
-                            className="gap-1 gradient-primary text-white"
-                          >
-                            <CheckCircle2 className="h-4 w-4" />
-                            {t('accept_ride')}
-                          </Button>
-                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => acceptRide(ride.id)}
+                          disabled={loading}
+                          className="gap-1 gradient-primary text-white"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                          {t('accept_ride')}
+                        </Button>
                       </div>
                     </div>
                   </Card>
