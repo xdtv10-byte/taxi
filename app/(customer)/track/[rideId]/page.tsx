@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
@@ -17,8 +17,8 @@ import { cn } from '@/lib/utils';
 
 const statusOrder = ['pending', 'accepted', 'driver_arrived', 'in_progress', 'completed'];
 
-export default function TrackRidePage({ params }: { params: Promise<{ rideId: string }> }) {
-  const { rideId } = use(params);
+export default function TrackRidePage({ params }: { params: { rideId: string } }) {
+  const rideId = params.rideId;
   const { t, lang } = useTranslation();
   const { user } = useApp();
   const router = useRouter();
@@ -70,7 +70,7 @@ export default function TrackRidePage({ params }: { params: Promise<{ rideId: st
         (payload) => {
           const newRide = payload.new as Ride;
           setRide(newRide);
-          if (newRide.driver_id && !driver) {
+          if (newRide.driver_id) {
             (async () => {
               const { data: d } = await supabase
                 .from('drivers')
@@ -101,7 +101,6 @@ export default function TrackRidePage({ params }: { params: Promise<{ rideId: st
     return () => {
       supabase.removeChannel(channel);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rideId]);
 
   const cancelRide = async () => {
