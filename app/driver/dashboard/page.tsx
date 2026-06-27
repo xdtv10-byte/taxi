@@ -22,7 +22,7 @@ export default function DriverDashboardPage() {
   const { t, lang } = useTranslation();
   const { profile, authLoading, signOut } = useApp();
   const {
-    driver, pendingRides, activeRide, todayStats, loading,
+    driver, pendingRides, activeRide, activeCustomer, todayStats, loading,
     setStatus, acceptRide, updateRideStatus, updateLocation, fetchDriver,
   } = useDriver();
   const router = useRouter();
@@ -226,14 +226,61 @@ export default function DriverDashboardPage() {
               </span>
             </div>
 
-            <div className="mb-4 space-y-2 text-sm">
-              <div className="flex items-start gap-2">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                <span>{activeRide.pickup_address}</span>
+            {/* معلومات العميل */}
+            {activeCustomer && (
+              <div className="mb-4 flex items-center justify-between rounded-xl border border-border bg-secondary/40 px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20 text-sm font-bold text-primary">
+                    {activeCustomer.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold">{activeCustomer.name}</div>
+                    <div className="text-xs text-muted-foreground">{lang === 'ar' ? 'العميل' : 'Customer'}</div>
+                  </div>
+                </div>
+                {activeCustomer.phone && (
+                  <a
+                    href={`tel:${activeCustomer.phone}`}
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-success/15 text-success hover:bg-success/25 transition-colors"
+                  >
+                    <Phone className="h-4 w-4" />
+                  </a>
+                )}
               </div>
-              <div className="flex items-start gap-2">
-                <Navigation className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-                <span>{activeRide.dropoff_address}</span>
+            )}
+
+            <div className="mb-4 space-y-2 text-sm">
+              {/* موقع الاستلام */}
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start gap-2 flex-1 min-w-0">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <span className="truncate">{activeRide.pickup_address}</span>
+                </div>
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${activeRide.pickup_lat},${activeRide.pickup_lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 flex items-center gap-1 rounded-lg bg-primary/10 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
+                >
+                  <Navigation className="h-3 w-3" />
+                  {lang === 'ar' ? 'اتجاهات' : 'Navigate'}
+                </a>
+              </div>
+              {/* موقع التوصيل */}
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start gap-2 flex-1 min-w-0">
+                  <Navigation className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                  <span className="truncate">{activeRide.dropoff_address}</span>
+                </div>
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${activeRide.dropoff_lat},${activeRide.dropoff_lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 flex items-center gap-1 rounded-lg bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive hover:bg-destructive/20 transition-colors"
+                >
+                  <Navigation className="h-3 w-3" />
+                  {lang === 'ar' ? 'اتجاهات' : 'Navigate'}
+                </a>
               </div>
               <div className="flex items-center justify-between border-t border-border pt-2">
                 <span className="text-muted-foreground">{activeRide.distance_km} {t('km')}</span>
