@@ -37,43 +37,53 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  * { @apply border-border; }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Cairo', 'Inter', system-ui, sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-  html {
-    scroll-behavior: smooth;
-  }
+  html { scroll-behavior: smooth; }
 }
 
 @layer components {
   .glass {
-    background: rgba(26, 26, 26, 0.6);
+    background: rgba(16, 16, 20, 0.7);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(0, 212, 170, 0.07);
   }
   .glass-strong {
-    background: rgba(10, 10, 10, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(10, 10, 13, 0.88);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(0, 212, 170, 0.09);
   }
+  /* اللون الأصلي #00d4aa */
   .gradient-primary {
     background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
   }
   .gradient-hero {
-    background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 212, 170, 0.18), transparent),
-                radial-gradient(ellipse 60% 50% at 80% 50%, rgba(0, 212, 170, 0.08), transparent);
+    background:
+      radial-gradient(ellipse 90% 60% at 50% -10%, rgba(0, 212, 170, 0.14), transparent),
+      radial-gradient(ellipse 50% 40% at 85% 55%, rgba(0, 212, 170, 0.07), transparent);
   }
   .text-gradient {
     background: linear-gradient(135deg, #00d4aa 0%, #00f5c4 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+  }
+  .glow-primary {
+    box-shadow: 0 0 28px rgba(0, 212, 170, 0.20), 0 0 10px rgba(0, 212, 170, 0.10);
+  }
+  .card-hover {
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card-hover:hover {
+    border-color: rgba(0, 212, 170, 0.22);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 24px rgba(0, 212, 170, 0.06);
   }
 }
 
@@ -93,17 +103,17 @@
     50% { transform: translateY(-10px); }
   }
   .animate-fade-in {
-    animation: fade-in 0.5s ease-out;
+    animation: fade-in 0.4s ease-out;
   }
   @keyframes fade-in {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
   .animate-slide-up {
-    animation: slide-up 0.4s ease-out;
+    animation: slide-up 0.35s ease-out;
   }
   @keyframes slide-up {
-    from { opacity: 0; transform: translateY(20px); }
+    from { opacity: 0; transform: translateY(18px); }
     to { opacity: 1; transform: translateY(0); }
   }
   .animate-ping-slow {
@@ -114,40 +124,30 @@
   }
 }
 
-/* Leaflet overrides */
+/* Leaflet */
 .leaflet-container {
-  background: #1a1a1a !important;
+  background: #101014 !important;
   border-radius: 0.75rem;
 }
 .leaflet-popup-content-wrapper {
-  background: #1a1a1a;
+  background: #18181f;
   color: #fff;
-  border: 1px solid rgba(0, 212, 170, 0.3);
+  border: 1px solid rgba(0, 212, 170, 0.25);
+  border-radius: 12px;
 }
-.leaflet-popup-tip {
-  background: #1a1a1a;
-}
+.leaflet-popup-tip { background: #18181f; }
 .leaflet-bar a {
-  background: #1a1a1a;
+  background: #18181f;
   color: #fff;
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 .leaflet-bar a:hover {
-  background: #2a2a2a;
+  background: #222;
+  color: #00d4aa;
 }
 
 /* Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #0a0a0a;
-}
-::-webkit-scrollbar-thumb {
-  background: #2a2a2a;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #3a3a3a;
-}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0a0a0d; }
+::-webkit-scrollbar-thumb { background: #252530; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #00d4aa44; }

@@ -1,6 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter, Cairo } from 'next/font/google';
+import { Cairo, Inter } from 'next/font/google';
 import { Toaster } from 'sonner';
 import { Providers } from '@/components/providers';
 
@@ -13,30 +13,24 @@ const inter = Inter({
 const cairo = Cairo({
   subsets: ['arabic', 'latin'],
   variable: '--font-cairo',
+  weight: ['400', '600', '700', '900'],
   display: 'swap',
 });
 
 export const metadata: Metadata = {
   title: 'TaxiHub — احجز رحلتك الآن',
-  description:
-    'TaxiHub — تطبيق حجز التاكسي الذكي. اقتصادية، مريحة، مميزة. احجز رحلتك في ثوانٍ.',
-  openGraph: {
-    title: 'TaxiHub',
-    description: 'احجز رحلتك الآن — تطبيق حجز التاكسي الذكي',
-    images: [{ url: 'https://bolt.new/static/og_default.png' }],
-  },
+  description: 'TaxiHub — خدمة توصيل ذكية وموثوقة. احجز رحلتك في ثوانٍ.',
+  icons: { icon: '/favicon.ico' },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
-      <body
-        className={`${inter.variable} ${cairo.variable} font-sans bg-background text-foreground antialiased`}
-      >
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      </head>
+      <body className={`${inter.variable} ${cairo.variable} bg-background text-foreground antialiased`}>
         <Providers>{children}</Providers>
         <Toaster
           position="top-center"
@@ -44,8 +38,8 @@ export default function RootLayout({
           toastOptions={{
             style: {
               background: 'hsl(240 6% 10%)',
-              border: '1px solid hsl(240 5% 18%)',
-              color: 'hsl(0 0% 98%)',
+              border: '1px solid rgba(0,212,170,0.15)',
+              color: '#fff',
             },
           }}
         />
