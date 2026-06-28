@@ -142,7 +142,7 @@ export default function HomePage() {
             <div className="space-y-4">
               {[
                 { icon: Phone, label: lang === 'ar' ? 'الهاتف' : 'Phone', value: '+966 11 234 5678' },
-                { icon: Mail, label: lang === 'ar' ? 'البريد' : 'Email', value: 'support@taxihub.app' },
+                { icon: Mail, label: lang === 'ar' ? 'البريد' : 'Email', value: 'support@taxihub.live' },
                 { icon: MapPin, label: lang === 'ar' ? 'العنوان' : 'Address', value: lang === 'ar' ? 'الرياض، المملكة العربية السعودية' : 'Riyadh, Saudi Arabia' },
               ].map(({ icon: Icon, label, value }, i) => (
                 <div key={i} className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
