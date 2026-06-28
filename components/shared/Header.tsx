@@ -40,11 +40,12 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full glass-strong border-b border-border/40">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary shadow-lg shadow-primary/20">
-            <Car className="h-5 w-5 text-white" />
+          <div className="relative flex h-9 w-9 items-center justify-center rounded-xl gradient-primary shrink-0" style={{boxShadow:'0 0 20px rgba(0,212,170,0.3)'}}>
+            <Car className="h-[18px] w-[18px] text-black" strokeWidth={2.2} />
+            <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary" style={{border:'2px solid hsl(240 10% 3.9%)'}}/>
           </div>
-          <span className="text-xl font-bold tracking-tight">
-            Taxi<span className="text-gradient">Hub</span>
+          <span className="text-[1.2rem] font-black tracking-tight" style={{letterSpacing:'-0.045em'}}>
+            TAXI<span className="text-gradient font-light" style={{letterSpacing:'-0.02em'}}>hub</span>
           </span>
         </Link>
 
