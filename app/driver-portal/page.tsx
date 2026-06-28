@@ -32,7 +32,7 @@ export default function DriverLoginPage() {
 
       <Card className="w-full max-w-md border-border glass p-8 animate-fade-in">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl gradient-primary shadow-lg shadow-primary/20">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl gradient-primary shadow-lg shadow-none">
             <CarFront className="h-7 w-7 text-white" />
           </div>
           <h1 className="text-2xl font-bold">{t('driver_portal')}</h1>
