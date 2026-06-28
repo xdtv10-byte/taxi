@@ -97,11 +97,11 @@ export default function RegisterPage() {
       <Card className="w-full max-w-lg border-border glass p-8 animate-fade-in">
         <div className="mb-6 text-center">
           <Link href="/" className="inline-flex items-center gap-2.5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl gradient-primary shadow-lg shadow-primary/20">
-              <Car className="h-6 w-6 text-white" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl gradient-primary">
+              <Car className="h-6 w-6 text-black" strokeWidth={2.2} />
             </div>
             <span className="text-2xl font-bold">
-              Taxi<span className="text-gradient">Hub</span>
+              TAXI<span className="text-gradient font-light">hub</span>
             </span>
           </Link>
         </div>
