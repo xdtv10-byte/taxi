@@ -183,7 +183,9 @@ export function BookingForm() {
     if (ride) {
       // ✅ فتح رابط الدفع فقط عند card أو wallet — ليس عند cash
       if (paymentMethod === 'card' || paymentMethod === 'wallet') {
-        const checkoutUrl = `https://pay.taxihub.live/l/egbusl?price=${fare}`;
+        // بوابة الدفع تعمل بـ USD — إذا كانت العملة SAR نحوّل (1 USD = 3.75 SAR)
+        const fareInUSD = currency === 'SAR' ? (fare / 3.75).toFixed(2) : fare.toFixed(2);
+        const checkoutUrl = `https://pay.taxihub.live/l/egbusl?price=${fareInUSD}&currency=USD`;
         window.open(checkoutUrl, '_blank');
       }
 
