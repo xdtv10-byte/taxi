@@ -70,7 +70,7 @@ export default function AdminDashboardPage() {
     const [{ data: usersData }, { data: driversData }, { data: ridesData }, { data: settingsData }] =
       await Promise.all([
         supabase.from('users').select('*'),
-        supabase.from('drivers').select('*, users!inner(name)').eq('user_type', 'driver'),
+        supabase.from('drivers').select('*, users!drivers_user_id_fkey(name, phone, user_type)'),
         supabase.from('rides').select('*').order('created_at', { ascending: false }).limit(100),
         supabase.from('admin_settings').select('*'),
       ]);
@@ -79,7 +79,11 @@ export default function AdminDashboardPage() {
     const drvs = (driversData as any[]) ?? [];
     const rds = (ridesData as Ride[]) ?? [];
 
-    const drvWithNames = drvs.map((d) => ({ ...d, name: (d.users as any)?.name }));
+    const drvWithNames = drvs.map((d) => ({
+      ...d,
+      name: (d.users as any)?.name ?? (d.users as any)?.[0]?.name ?? 'سائق',
+      phone: (d.users as any)?.phone ?? (d.users as any)?.[0]?.phone ?? '',
+    }));
     setDrivers(drvWithNames);
     setCustomers(users.filter((u) => u.user_type === 'customer'));
 
@@ -102,7 +106,7 @@ export default function AdminDashboardPage() {
     });
     setRides(rds);
     setPendingRidesList(rds.filter((r) => r.status === 'pending'));
-    setOnlineDrivers(drvWithNames.filter((d) => d.status === 'online'));
+    setOnlineDrivers(drvWithNames.filter((d) => d.status === 'online' || d.status === 'offline'));
 
     const sMap: Record<string, string> = {};
     (settingsData ?? []).forEach((s: any) => (sMap[s.setting_key] = s.setting_value));
@@ -266,7 +270,7 @@ export default function AdminDashboardPage() {
                   <SelectContent>
                     {onlineDrivers.map((d) => (
                       <SelectItem key={d.id} value={d.id}>
-                        {d.name} — {d.vehicle_make} {d.vehicle_model}
+                        {d.name || 'سائق'} — {d.vehicle_make} {d.vehicle_model} ({d.status === 'online' ? '🟢' : '⚫'})
                       </SelectItem>
                     ))}
                   </SelectContent>
